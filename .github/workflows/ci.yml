@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: netra_demo
+          NETRA_RO_PASSWORD: ci_ro_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d netra_demo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://netra_ro:ci_ro_password@localhost:5432/netra_demo
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply DB init scripts (role, schema, seed)
+        run: |
+          export PGPASSWORD=postgres
+          psql -h localhost -U postgres -d netra_demo -v ON_ERROR_STOP=1 \
+            -v ro_password="$NETRA_RO_PASSWORD" -f db/init/01-readonly-role.sql
+          psql -h localhost -U postgres -d netra_demo -v ON_ERROR_STOP=1 -f db/init/02-schema.sql
+          psql -h localhost -U postgres -d netra_demo -v ON_ERROR_STOP=1 -f db/seed/03-seed-data.sql
+        env:
+          NETRA_RO_PASSWORD: ci_ro_password
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test (includes the read-only role permission test)
+        run: pnpm test

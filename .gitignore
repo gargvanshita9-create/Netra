@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# this repo is pnpm-only — never commit an npm/yarn lockfile
+package-lock.json
+yarn.lock
+
+# build output
+dist/
+build/
+.turbo/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# test / coverage
+coverage/
+
+# misc
+*.tsbuildinfo
+.eslintcache
+
+# large generated seed data (kept out of git; regenerate via scripts/seed-data.ts)
+db/seed/*.csv
