@@ -4,7 +4,7 @@ A conversational data analyst. Ask a question in your own language, typed or spo
 
 See [`PROJECT_PLAN.md`](./PROJECT_PLAN.md) for what's being built and [`CLAUDE.md`](./CLAUDE.md) for how.
 
-**Current status:** Phase 0 (foundation) in progress.
+**Current status:** Phase A (avatar spike) in progress — A1/A2/A3 done.
 
 ## Prerequisites
 
@@ -55,3 +55,10 @@ The database is queried through the `netra_ro` Postgres role, which is granted `
 
 - [x] Phase 0 — foundation (workspace, contracts, DB, CI)
 - [ ] Phase A — avatar spike
+  - [x] A1 — asset acquisition and validation (see `docs/ASSET_NOTES.md`)
+  - [x] A2 — static render (`AvatarStage.tsx`, `AvatarModel.tsx`)
+  - [x] A3 — viseme playback from a fixture (`useVisemePlayer.ts`, `visemeMap.ts`, `public/fixtures/greeting.en.json`)
+  - [ ] A4 — body animation and gestures
+  - [ ] A5 — idle life
+  - [ ] A6 — live TTS integration
+  - [ ] A7 — stage design and polish

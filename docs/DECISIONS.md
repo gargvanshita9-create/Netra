@@ -57,6 +57,39 @@ PROJECT_PLAN.md §4.3 specifies the read-only role SQL using a `psql` variable (
 
 ---
 
-## Open (deferred to Phase A)
+## ADR-006: A1 avatar asset (`brunette.glb`) is CC BY-NC 4.0 — non-commercial only
 
-- **R3F / React 19 compatibility** (PROJECT_PLAN.md open question #1, gate A2): `apps/web` currently uses React 19.2.8 as scaffolded by `create-vite`. Whether `@react-three/fiber` needs React 18 instead is not yet decided — no R3F code exists yet. Resolve and record here before writing `AvatarStage.tsx`.
+**Date:** 2026-08-20
+**Status:** Accepted, with a required follow-up before commercial launch
+
+For the A1 spike we used the TalkingHead.js sample avatar `brunette.glb`, sourced from Ready Player Me and licensed **CC BY-NC 4.0** (non-commercial use only) — see `docs/ASSET_NOTES.md`. This was a deliberate choice, confirmed with the project owner, not an oversight: PROJECT_PLAN.md §5.1 already frames Option A as a throwaway spike asset ("swap for a custom model later"), and this asset was independently verified to carry the full Oculus viseme set, eye-blink shapes, a Mixamo-compatible rig, and to sit comfortably within the triangle/size budget — de-risking the rest of Phase A immediately.
+
+**Why not the CC0 alternative:** `mpfb.glb` (also bundled with TalkingHead.js) is CC0/fully commercial-safe, but at 36.8 MB uncompressed it's far outside budget, and its viseme blendshapes were not yet verified — using it first risked failing the A1 gate and losing a validation cycle for no guaranteed benefit.
+
+**Follow-up required, tracked here:** this asset must be replaced with a commercially-licensed or custom-authored one (Option B/C, or a licensed Ready Player Me subscription, or Microsoft RocketBox re-rigged via Mixamo — MIT licensed, ships ARKit+Oculus shapes) before Phase 7 (deploy) or any commercial use. Do not let this slide unaddressed — check `docs/ASSET_NOTES.md` before shipping.
+
+---
+
+## ADR-007: React 19 kept — `@react-three/fiber` v9 supports it natively
+
+**Date:** 2026-08-20
+**Status:** Accepted — resolves PROJECT_PLAN.md open question #1
+
+`@react-three/fiber` 9.7.0's own `peerDependencies` declare `"react": ">=19 <19.3"` and `"react-dom": ">=19 <19.3"`; `@react-three/drei` 10.7.8 requires `"react": "^19"` and `"@react-three/fiber": "^9.0.0"`. `apps/web` is on React 19.2.8, inside both ranges. Installed with no peer-dependency warnings. **No downgrade to React 18 needed** — R3F v9+ is the version line built for React 19.
+
+Confirmed empirically in A2: `AvatarStage.tsx` (Canvas, PerspectiveCamera, OrbitControls, Suspense, useGLTF) renders correctly under React 19.2.8 with no console errors, verified via a headless-Chromium screenshot pass.
+
+**Watch this:** the peer range has an upper bound (`<19.3`). If a future `pnpm install` bumps React past 19.3.0, R3F will need a matching major bump too — don't let `react` drift ahead of `@react-three/fiber`'s supported range unintentionally.
+
+---
+
+## ADR-008: A3 fixture audio generated locally with macOS `say`, viseme timing hand-approximated
+
+**Date:** 2026-08-20
+**Status:** Accepted
+
+`public/fixtures/greeting.en.m4a` was synthesized with the local macOS `say` command (voice: Samantha) and converted to AAC/m4a with `afconvert` — not Azure Speech. `AZURE_SPEECH_KEY` isn't configured yet (that's A6), and PROJECT_PLAN.md §5.1 explicitly calls for A3 fixtures to be **hand-authored**, not pulled from a live TTS call. This kept the fixture free, offline, and reproducible.
+
+**The viseme timeline in `greeting.en.json` is a hand-approximated phoneme timing**, not derived from real forced-alignment or Azure's actual viseme event stream — durations and offsets were estimated per-word from the audio's total length (4.65s), not measured. This is sufficient for A3's gate ("the avatar's mouth visibly and plausibly matches the audio," confirmed by screenshot sampling during playback) but is **not** representative of real viseme timing accuracy or of what Azure's `visemeReceived` events will actually look like.
+
+**Follow-up:** when A6 (live TTS integration) replaces fixtures with real `POST /speech/synthesize` calls, this hand-authored timeline is superseded entirely by Azure's real viseme stream — no migration needed, just stop using the fixture. If more fixtures are hand-authored before then, keep them similarly approximate; don't over-invest in precision that gets thrown away at A6.
