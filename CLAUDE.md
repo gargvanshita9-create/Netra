@@ -55,7 +55,10 @@ pnpm --filter api dev
 pnpm -r typecheck         # must pass before any commit
 pnpm -r lint
 pnpm -r test
-pnpm inspect-glb <path>   # dump morph targets + clips from a GLB
+pnpm inspect-glb <path>   # dump morph targets + clips from a GLB (reads Draco + VRM)
+pnpm prepare-avatar <in.vrm> <out.glb>  # VRM → web GLB: resize/WebP textures, strip unused morphs, Draco
+pnpm transfer-blendshapes <in.vrm> <out.glb>  # copy ARKit 52 onto a VRoid export (UV-matched, donor auto-downloaded)
+pnpm verify-speech        # check AZURE_SPEECH_* credentials, voice names, and that visemes arrive
 ```
 
 If a command in this list does not exist yet and the current task needs it, create it and update this section in the same change.

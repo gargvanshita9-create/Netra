@@ -34,5 +34,9 @@ coverage/
 *.tsbuildinfo
 .eslintcache
 
+# cached Azure Speech syntheses (regenerated on demand; never a build input)
+.cache/
+
 # large generated seed data (kept out of git; regenerate via scripts/seed-data.ts)
 db/seed/*.csv
+scripts/.cache/

@@ -8,6 +8,7 @@
 import { statSync } from 'node:fs';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+import draco3d from 'draco3dgltf';
 
 const OCULUS_VISEMES = [
   'viseme_sil',
@@ -50,7 +51,11 @@ async function main(): Promise<void> {
   }
 
   const fileSize = statSync(filePath).size;
-  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+  // Draco decoder registered so the gate can re-validate *compressed* output —
+  // compression can silently corrupt morph targets (AVATAR_DESIGN_SPEC §2.5).
+  const io = new NodeIO()
+    .registerExtensions(ALL_EXTENSIONS)
+    .registerDependencies({ 'draco3d.decoder': await draco3d.createDecoderModule() });
   const document = await io.read(filePath);
   const root = document.getRoot();
 

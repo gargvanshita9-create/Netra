@@ -8,8 +8,8 @@ const AvatarStage = lazy(() =>
 
 function App(): React.JSX.Element {
   return (
-    <main className="h-screen w-screen bg-slate-950">
-      <Suspense fallback={<div className="h-full w-full bg-slate-950" />}>
+    <main className="h-screen w-screen bg-[#3b3a3e]">
+      <Suspense fallback={<div className="h-full w-full bg-[#3b3a3e]" />}>
         <AvatarStage />
       </Suspense>
     </main>

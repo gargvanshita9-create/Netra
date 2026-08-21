@@ -11,6 +11,9 @@ async function bootstrap(): Promise<void> {
   );
 
   const config = app.get(AppConfigService);
+  // The web app is served from a different origin in dev (Vite on :5173).
+  // Named explicitly rather than wildcarded so this stays honest in deploy.
+  app.enableCors({ origin: config.webOrigin });
   await app.listen(config.port, '0.0.0.0');
 }
 

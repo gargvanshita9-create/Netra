@@ -35,7 +35,34 @@ pnpm -r lint
 pnpm -r test
 pnpm seed:generate        # regenerate db/seed/03-seed-data.sql
 pnpm inspect-glb <path>   # dump morph targets + clips from a GLB (Phase A)
+pnpm verify-speech        # check Azure Speech credentials, voice names, and viseme output
 ```
+
+## Speech synthesis
+
+`apps/api` turns text into a `SpeechPacket` — audio plus the timestamped viseme
+timeline that drives the avatar's lips.
+
+```bash
+curl -X POST localhost:3000/speech/synthesize \
+  -H 'content-type: application/json' \
+  -d '{"text":"Deposits grew nine percent last quarter.","lang":"en-IN"}'
+
+curl localhost:3000/speech/usage   # today's Azure Speech spend
+```
+
+`NETRA_TTS_MODE` decides where the audio comes from:
+
+| Mode | Behaviour |
+|---|---|
+| `fixture` (default) | Serves hand-authored packets from `apps/api/fixtures/speech/` and anything already in the synthesis cache. **Reaches the network never** — this is also the public demo mode. A sentence with no fixture returns 503 explaining how to add one. Lookup falls back across regions within a language, so `en-IN` finds an `en-US` recording. |
+| `live` | Synthesises through Azure Speech, then caches the result. Requires `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION`; the API refuses to start without them. |
+
+Every synthesis is cached to `NETRA_TTS_CACHE_DIR` (default `.cache/tts`) under
+`hash(text + lang + voice)`, so replaying one sentence while tuning lip-sync
+bills exactly once. Azure is specified over better-sounding providers for one
+reason only: it emits a timestamped viseme stream across 100+ languages
+(`PROJECT_PLAN.md` §5.3).
 
 ## Repository layout
 
@@ -60,5 +87,5 @@ The database is queried through the `netra_ro` Postgres role, which is granted `
   - [x] A3 — viseme playback from a fixture (`useVisemePlayer.ts`, `visemeMap.ts`, `public/fixtures/greeting.en.json`)
   - [ ] A4 — body animation and gestures
   - [ ] A5 — idle life
-  - [ ] A6 — live TTS integration
+  - [x] A6 — live TTS integration (`POST /speech/synthesize`, caching, spend counter, fixture mode; verified live against Azure in English, Hindi, Tamil, Marathi, Telugu and Gujarati. See ADR-017 — bn-IN, kn-IN and ml-IN return audio but no visemes, so they degrade to amplitude-driven jaw motion.)
   - [ ] A7 — stage design and polish
